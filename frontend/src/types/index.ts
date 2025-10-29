@@ -1,14 +1,17 @@
 // src/types/index.ts
+
+// 1. Definisikan tipe Role agar bisa di-import
+export type UserRole = 'ADMIN' | 'MANAGER' | 'USER';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'MANAGER' | 'USER';
+  role: UserRole; // 2. Gunakan tipe UserRole
   createdAt: string;
   updatedAt: string;
 }
 
-// src/types/index.ts
 export interface Vehicle {
   id: string;
   licensePlate: string;
@@ -28,12 +31,10 @@ export interface Vehicle {
     name: string;
     email: string;
   };
-  // Tambahkan trips dan maintenance
   trips?: Trip[];
   maintenance?: Maintenance[];
 }
 
-// src/types/index.ts - Pastikan Trip type sesuai
 export interface Trip {
   id: string;
   vehicleId: string;
@@ -72,7 +73,13 @@ export interface Maintenance {
     model: string;
     status: VehicleStatus;
   };
-  type: 'ROUTINE_CHECK' | 'OIL_CHANGE' | 'TIRE_REPLACEMENT' | 'BRAKE_SERVICE' | 'ENGINE_REPAIR' | 'OTHER';
+  type:
+    | 'ROUTINE_CHECK'
+    | 'OIL_CHANGE'
+    | 'TIRE_REPLACEMENT'
+    | 'BRAKE_SERVICE'
+    | 'ENGINE_REPAIR'
+    | 'OTHER';
   description: string;
   cost?: number;
   date: string;
@@ -89,6 +96,7 @@ export interface MaintenanceStats {
   completionRate: number;
 }
 
+// 3. AuthResponse dibersihkan agar tidak ambigu
 export interface AuthResponse {
   user: User;
   tokens: {
@@ -106,7 +114,15 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
-  role?: 'ADMIN' | 'MANAGER' | 'USER';
+  role?: UserRole; // 4. Gunakan tipe UserRole
+}
+
+// 5. Tipe baru untuk Admin Create User
+export interface AdminCreateUserRequest {
+  email: string;
+  password: string;
+  name: string;
+  role: UserRole; // Wajib
 }
 
 export interface ApiResponse<T = any> {
@@ -115,9 +131,9 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
 }
-// src/types/index.ts
+
 export interface PaginatedResponse<T = any> {
-  data: T[]; // atau vehicles: T[] - sesuaikan dengan backend
+  data: T[];
   pagination: {
     page: number;
     limit: number;
@@ -126,7 +142,6 @@ export interface PaginatedResponse<T = any> {
   };
 }
 
-// Tambahkan interface untuk backend response structure
 export interface VehiclesResponse {
   vehicles: Vehicle[];
   pagination: {

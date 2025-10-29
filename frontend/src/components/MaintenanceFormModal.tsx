@@ -1,5 +1,4 @@
-// src/components/MaintenanceFormModal.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { maintenanceService } from '../services/maintenance.service';
 import { vehicleService } from '../services/vehicle.service';

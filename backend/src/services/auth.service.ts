@@ -1,24 +1,24 @@
 // src/services/auth.service.ts
-import { UserRole } from "@prisma/client";
-import { UserService } from "./user.service";
-import { AuthUtils } from "../utils/auth";
-import { AuthResponse, LoginRequest, RegisterRequest } from "../types";
+import { UserRole, User } from '@prisma/client';
+import { UserService } from './user.service';
+import { AuthUtils } from '../utils/auth';
+import { AuthResponse, LoginRequest, RegisterRequest } from '../types';
 
 export class AuthService {
   // User registration
   static async register(data: RegisterRequest): Promise<AuthResponse> {
     const { email, password, name, role = UserRole.USER } = data;
 
-    // Check if user already exists
     const existingUser = await UserService.findByEmail(email);
     if (existingUser) {
-      throw new Error("User already exists with this email");
+      throw new Error('User already exists with this email');
     }
 
-    // Create user
-    const user = await UserService.createUser(email, password, name, role);
+    // Hash password
+    const passwordHash = await AuthUtils.hashPassword(password);
 
-    // Generate tokens
+    const user = await UserService.createUser(email, passwordHash, name, role);
+
     const tokens = {
       accessToken: AuthUtils.generateToken({
         userId: user.id,
@@ -31,8 +31,11 @@ export class AuthService {
       }),
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = user;
+
     return {
-      user,
+      user: userWithoutPassword,
       tokens,
     };
   }
@@ -41,22 +44,19 @@ export class AuthService {
   static async login(data: LoginRequest): Promise<AuthResponse> {
     const { email, password } = data;
 
-    // Find user
     const user = await UserService.findByEmail(email);
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new Error('Invalid email or password');
     }
 
-    // Verify password
     const isValidPassword = await AuthUtils.comparePassword(
       password,
       user.password
     );
     if (!isValidPassword) {
-      throw new Error("Invalid email or password");
+      throw new Error('Invalid email or password');
     }
 
-    // Generate tokens
     const tokens = {
       accessToken: AuthUtils.generateToken({
         userId: user.id,
@@ -69,7 +69,7 @@ export class AuthService {
       }),
     };
 
-    // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return {
@@ -88,10 +88,9 @@ export class AuthService {
 
       const user = await UserService.findById(decoded.userId);
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
-      // Generate new tokens
       const tokens = {
         accessToken: AuthUtils.generateToken({
           userId: user.id,
@@ -104,19 +103,61 @@ export class AuthService {
         }),
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...userWithoutPassword } = user;
+
       return {
-        user,
+        user: userWithoutPassword,
         tokens,
       };
     } catch (error) {
-      throw new Error("Invalid refresh token");
+      throw new Error('Invalid refresh token');
     }
   }
-  static async getUserProfile(userId: string) {
+
+  // --- FUNGSI YANG DIKEMBALIKAN ---
+
+  /**
+   * Get user profile details
+   */
+  static async getUserProfile(userId: string): Promise<Omit<User, 'password'>> {
     const user = await UserService.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
-    return user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
+
+  /**
+   * Update user profile (name or password)
+   */
+  static async updateProfile(
+    userId: string,
+    data: { name?: string; password?: string }
+  ): Promise<Omit<User, 'password'>> {
+    const updateData: { name?: string; password?: string } = {};
+
+    if (data.name) {
+      updateData.name = data.name;
+    }
+
+    // Jika password disediakan, hash password baru
+    if (data.password) {
+      updateData.password = await AuthUtils.hashPassword(data.password);
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      throw new Error('No data provided for update');
+    }
+
+    // Panggil UserService untuk update
+    const updatedUser = await UserService.updateUser(userId, updateData);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    return userWithoutPassword;
   }
 }

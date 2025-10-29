@@ -1,5 +1,5 @@
-// src/docs/swagger.ts
 import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import { config } from '../config';
 
 const swaggerDefinition = {
@@ -8,14 +8,6 @@ const swaggerDefinition = {
     title: 'Vehicle Tracker API',
     version: '1.0.0',
     description: 'Comprehensive Vehicle Tracking and Management System API',
-    contact: {
-      name: 'API Support',
-      email: 'support@vehicletracker.com'
-    },
-    license: {
-      name: 'MIT',
-      url: 'https://spdx.org/licenses/MIT.html'
-    }
   },
   servers: [
     {
@@ -23,7 +15,7 @@ const swaggerDefinition = {
       description: 'Development server'
     },
     {
-      url: 'https://api.vehicletracker.com',
+      url: 'https://vehicletracker.my.id',
       description: 'Production server'
     }
   ],
@@ -32,7 +24,8 @@ const swaggerDefinition = {
       bearerAuth: {
         type: 'http',
         scheme: 'bearer',
-        bearerFormat: 'JWT'
+        bearerFormat: 'JWT',
+        description: 'Enter your JWT token in the format: Bearer <token>'
       }
     },
     schemas: {
@@ -122,6 +115,93 @@ const swaggerDefinition = {
           }
         }
       },
+      Trip: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid'
+          },
+          vehicleId: {
+            type: 'string',
+            format: 'uuid'
+          },
+          startTime: {
+            type: 'string',
+            format: 'date-time'
+          },
+          endTime: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true
+          },
+          startLat: {
+            type: 'number',
+            format: 'float'
+          },
+          startLng: {
+            type: 'number',
+            format: 'float'
+          },
+          endLat: {
+            type: 'number',
+            format: 'float',
+            nullable: true
+          },
+          endLng: {
+            type: 'number',
+            format: 'float',
+            nullable: true
+          },
+          distance: {
+            type: 'number',
+            format: 'float',
+            nullable: true
+          },
+          fuelUsed: {
+            type: 'number',
+            format: 'float',
+            nullable: true
+          },
+          status: {
+            type: 'string',
+            enum: ['ACTIVE', 'COMPLETED', 'CANCELLED']
+          }
+        }
+      },
+      Maintenance: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid'
+          },
+          vehicleId: {
+            type: 'string',
+            format: 'uuid'
+          },
+          type: {
+            type: 'string',
+            enum: ['OIL_CHANGE', 'TIRE_REPLACEMENT', 'BRAKE_SERVICE', 'ENGINE_REPAIR', 'GENERAL_INSPECTION', 'OTHER']
+          },
+          description: {
+            type: 'string'
+          },
+          cost: {
+            type: 'number',
+            format: 'float',
+            nullable: true
+          },
+          date: {
+            type: 'string',
+            format: 'date-time'
+          },
+          status: {
+            type: 'string',
+            enum: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED']
+          }
+        }
+      },
       AuthResponse: {
         type: 'object',
         properties: {
@@ -154,6 +234,21 @@ const swaggerDefinition = {
           }
         }
       },
+      SuccessResponse: {
+        type: 'object',
+        properties: {
+          success: {
+            type: 'boolean',
+            example: true
+          },
+          message: {
+            type: 'string'
+          },
+          data: {
+            type: 'object'
+          }
+        }
+      },
       ErrorResponse: {
         type: 'object',
         properties: {
@@ -166,18 +261,67 @@ const swaggerDefinition = {
             example: 'Error message description'
           }
         }
+      },
+      PaginationResponse: {
+        type: 'object',
+        properties: {
+          page: {
+            type: 'integer',
+            example: 1
+          },
+          limit: {
+            type: 'integer',
+            example: 10
+          },
+          total: {
+            type: 'integer',
+            example: 100
+          },
+          totalPages: {
+            type: 'integer',
+            example: 10
+          }
+        }
       }
     }
-  }
+  },
+  tags: [
+    {
+      name: 'Auth',
+      description: 'Authentication and authorization endpoints'
+    },
+    {
+      name: 'Users',
+      description: 'User management endpoints (Admin only)'
+    },
+    {
+      name: 'Vehicles',
+      description: 'Vehicle management endpoints'
+    },
+    {
+      name: 'Trips',
+      description: 'Trip tracking endpoints'
+    },
+    {
+      name: 'Maintenance',
+      description: 'Vehicle maintenance endpoints'
+    },
+    {
+      name: 'Reports',
+      description: 'Report generation endpoints'
+    }
+  ]
 };
 
-const options = {
+const options: swaggerJSDoc.Options = {
   swaggerDefinition,
   apis: [
     './src/routes/*.ts',
     './src/controllers/*.ts',
-    './src/docs/*.ts'
+    './src/docs/*.docs.ts'
   ],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);
+export { swaggerUi };
+

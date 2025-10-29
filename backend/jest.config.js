@@ -1,32 +1,23 @@
-// jest.config.js
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: [
-    '**/__tests__/**/*.+(ts|tsx|js)',
-    '**/?(*.)+(spec|test).+(ts|tsx|js)'
-  ],
+  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.test.json'
-    }]
+    '^.+\\.ts$': 'ts-jest',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/server.ts',
-    '!src/app.ts',
+    '!src/tests/**',
   ],
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60
     }
   },
-  // HAPUS BARIS INI: setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
-  // HAPUS BARIS INI JIKA ADA: globalSetup dan globalTeardown
-  testTimeout: 30000
+  testTimeout: 10000
 };

@@ -168,8 +168,8 @@ static async getAvailableVehicles() {
   }
 
   // Delete vehicle
-  static async deleteVehicle(id: string) {
-    // Check if vehicle has active trips
+static async deleteVehicle(id: string) {
+    // 1. Check for active trips (logic ini sudah benar)
     const activeTrips = await prisma.trip.count({
       where: {
         vehicleId: id,
@@ -181,6 +181,27 @@ static async getAvailableVehicles() {
       throw new Error('Cannot delete vehicle with active trips');
     }
 
+    // 2. (TAMBAHAN) Periksa maintenance yang sedang berjalan
+    const activeMaintenance = await prisma.maintenance.count({
+        where: {
+            vehicleId: id,
+            NOT: { status: 'COMPLETED' }
+        }
+    });
+
+    if (activeMaintenance > 0) {
+        throw new Error('Cannot delete vehicle with pending or in-progress maintenance');
+    }
+
+    // 3. (BARU) Hapus semua data dependen dalam satu transaksi
+    // Ini akan menghapus trip yang sudah selesai, maintenance, dan laporan terkait
+    await prisma.$transaction([
+      prisma.report.deleteMany({ where: { vehicleId: id } }), // Hapus laporan dulu
+      prisma.trip.deleteMany({ where: { vehicleId: id } }),
+      prisma.maintenance.deleteMany({ where: { vehicleId: id } })
+    ]);
+
+    // 4. (TERAKHIR) Hapus kendaraan setelah dependen dihapus
     return prisma.vehicle.delete({
       where: { id }
     });

@@ -1,5 +1,7 @@
-// src/services/api.ts
-import axios from 'axios';
+// src/services/api.ts - DIPERBAIKI
+import axios, { AxiosError } from 'axios';
+
+// Hapus 'declare module' yang sebelumnya ada di sini jika Anda menambahkannya.
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -10,7 +12,7 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor (Tidak berubah)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -24,14 +26,21 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+interface BackendError {
+  success: boolean;
+  error: string;
+}
+
+// Response interceptor (Diperbarui)
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError<BackendError>) => {
+    // 1. Ubah 'error.config' menjadi 'any' untuk bypass pengecekan tipe TypeScript
+    const originalRequest = error.config as any;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // 2. Sekarang 'originalRequest._retry' akan valid
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true; // Set properti kustom
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
@@ -49,7 +58,6 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh token failed, logout user
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
@@ -57,6 +65,12 @@ api.interceptors.response.use(
       }
     }
 
+    // Blok penanganan error (Tidak berubah)
+    if (error.response && error.response.data && error.response.data.error) {
+      return Promise.reject(new Error(error.response.data.error));
+    }
+
+    // Fallback
     return Promise.reject(error);
   }
 );

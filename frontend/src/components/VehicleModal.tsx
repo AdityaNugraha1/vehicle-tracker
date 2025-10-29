@@ -1,8 +1,6 @@
-// src/components/VehicleModal.tsx
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { vehicleService } from '../services/vehicle.service';
-import type { Vehicle } from '../types';
 import { Button } from './ui/Button';
 
 interface VehicleModalProps {

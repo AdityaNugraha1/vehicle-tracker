@@ -1,52 +1,53 @@
-import { PrismaClient, UserRole } from '@prisma/client';
-import { AuthUtils } from '../utils/auth';
+// src/services/user.service.ts
+import { PrismaClient, User, UserRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Tipe untuk user tanpa password
+export type SafeUser = Omit<User, 'password'>;
+
 export class UserService {
-  static async createUser(email: string, password: string, name: string, role: UserRole = UserRole.USER) {
-    const hashedPassword = await AuthUtils.hashPassword(password);
-
-    return prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  }
-
   static async findByEmail(email: string) {
-    return prisma.user.findUnique({
-      where: { email },
-    });
+    return prisma.user.findUnique({ where: { email } });
   }
 
   static async findById(id: string) {
-    return prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+    return prisma.user.findUnique({ where: { id } });
+  }
+
+  static async createUser(
+    email: string,
+    passwordHash: string,
+    name: string,
+    role: UserRole
+  ) {
+    return prisma.user.create({
+      data: {
+        email,
+        password: passwordHash,
+        name,
+        role,
       },
     });
   }
 
-  static async getAllUsers() {
-    return prisma.user.findMany({
+  static async updateUser(
+    userId: string,
+    data: { name?: string; password?: string; role?: UserRole }
+  ): Promise<User> {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.name && { name: data.name }),
+        ...(data.password && { password: data.password }),
+        ...(data.role && { role: data.role }),
+      },
+    });
+    return user;
+  }
+
+  static async getAllUsers(): Promise<SafeUser[]> {
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         email: true,
@@ -56,34 +57,28 @@ export class UserService {
         updatedAt: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: 'asc',
       },
     });
+    return users;
   }
 
-  static async updateUser(id: string, data: { name?: string; role?: UserRole }) {
-    return prisma.user.update({
-      where: { id },
-      data,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+  // --- FUNGSI BARU DITAMBAHKAN ---
+  /**
+   * [ADMIN] Menghapus user berdasarkan ID
+   */
+  static async deleteUser(userId: string): Promise<User> {
+    // Cari dulu untuk memastikan user ada sebelum mencoba menghapus
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
     });
-  }
-
-  static async deleteUser(id: string) {
+    if (!user) {
+      throw new Error('User not found');
+    }
+    // Hapus user
     return prisma.user.delete({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+      where: { id: userId },
     });
   }
+  // --- AKHIR BLOK TAMBAHAN ---
 }

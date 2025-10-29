@@ -5,17 +5,18 @@ import { authenticateToken, requireAdmin } from '../middlewares/auth.middleware'
 
 const router = Router();
 
-// All user routes require authentication
+// Terapkan middleware untuk SEMUA rute di file ini
 router.use(authenticateToken);
+router.use(requireAdmin);
 
-// User can manage their own profile
-router.get('/me', UserController.getCurrentUser);
-router.put('/me', UserController.updateCurrentUser);
+// Rute-rute khusus Admin yang sudah ada
+router.get('/', UserController.getAllUsers); // GET /api/users
+router.post('/', UserController.createUser); // POST /api/users
+router.patch('/:id/role', UserController.updateUserRole); // PATCH /api/users/:id/role
+router.put('/:id', UserController.updateUser); // PUT /api/users/:id
 
-// Admin only routes for user management
-router.get('/', requireAdmin, UserController.getAllUsers);
-router.get('/:id', requireAdmin, UserController.getUserById);
-router.put('/:id', requireAdmin, UserController.updateUser);
-router.delete('/:id', requireAdmin, UserController.deleteUser);
+// --- RUTE BARU DITAMBAHKAN ---
+router.delete('/:id', UserController.deleteUser); // DELETE /api/users/:id
+// --- AKHIR BLOK TAMBAHAN ---
 
 export default router;

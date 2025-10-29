@@ -1,13 +1,40 @@
 version: '3.8'
 
 services:
-  postgres:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vehicle-tracker-backend-dev
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      - db 
+      - redis
+    networks:
+      - vehicle_network 
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vehicle-tracker-frontend-dev
+    ports:
+      - "5173:80" 
+    networks:
+      - vehicle_network
+
+  db:
     image: postgres:15-alpine
-    container_name: vehicle_tracker_db
+    container_name: vehicle_tracker_db 
     environment:
       POSTGRES_DB: vehicle_tracker
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password 
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
@@ -23,9 +50,17 @@ services:
     networks:
       - vehicle_network
 
+  adminer:
+    image: adminer
+    container_name: vehicle-tracker-adminer-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - vehicle_network
+
 volumes:
-  postgres_data:
+  postgres_data: 
 
 networks:
-  vehicle_network:
+  vehicle_network: 
     driver: bridge
