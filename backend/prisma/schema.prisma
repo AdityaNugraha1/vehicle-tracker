@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+  reports  Report[]
+
+  @@map("users")
+}
+
+model Vehicle {
+  id           String   @id @default(uuid())
+  licensePlate String   @unique
+  brand        String
+  model        String
+  year         Int
+  color        String
+  status       VehicleStatus @default(AVAILABLE)
+  latitude     Float?
+  longitude    Float?
+  fuelLevel    Int?     // 0-100%
+  odometer     Int?     // in km
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  trips       Trip[]
+  maintenance Maintenance[]
+  reports     Report[]
+  createdBy   User     @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@map("vehicles")
+}
+
+model Trip {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  startTime   DateTime
+  endTime     DateTime?
+  startLat    Float?
+  startLng    Float?
+  endLat      Float?
+  endLng      Float?
+  distance    Float?   // in km
+  fuelUsed    Float?   // in liters
+  status      TripStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+
+  @@map("trips")
+}
+
+model Maintenance {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  type        MaintenanceType
+  description String
+  cost        Float?
+  date        DateTime
+  status      MaintenanceStatus @default(SCHEDULED)
+  createdAt   DateTime @default(now())
+
+  @@map("maintenance")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  title       String
+  type        ReportType
+  dateRange   Json?    // { start: Date, end: Date }
+  filePath    String?
+  generatedBy User     @relation(fields: [userId], references: [id])
+  userId      String
+  vehicleId   String?
+  vehicle     Vehicle? @relation(fields: [vehicleId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("reports")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum VehicleStatus {
+  AVAILABLE    
+  ON_TRIP   
+  MAINTENANCE  
+  OUT_OF_SERVICE
+  LOADING    
+}
+
+enum TripStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceType {
+  ROUTINE_CHECK
+  OIL_CHANGE
+  TIRE_REPLACEMENT
+  BRAKE_SERVICE
+  ENGINE_REPAIR
+  OTHER
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportType {
+  VEHICLE_UTILIZATION
+  MAINTENANCE_HISTORY
+  FUEL_CONSUMPTION
+  TRIP_SUMMARY
+  FINANCIAL
+}
