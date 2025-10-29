@@ -1,4 +1,3 @@
-// src/middlewares/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthUtils } from '../utils/auth';
 import { UserRole } from '@prisma/client';
@@ -40,7 +39,6 @@ export const requireRole = (allowedRoles: UserRole[]) => {
   };
 };
 
-// Specific role middlewares for convenience
 export const requireAdmin = requireRole([UserRole.ADMIN]);
 export const requireManager = requireRole([UserRole.ADMIN, UserRole.MANAGER]);
 export const requireAdminOrManager = requireRole([UserRole.ADMIN, UserRole.MANAGER]);

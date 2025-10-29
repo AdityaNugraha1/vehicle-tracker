@@ -1,4 +1,3 @@
-// src/tests/unit/report.test.ts
 import ExcelJS from 'exceljs';
 import { describe, it, expect } from '@jest/globals';
 
@@ -52,7 +51,7 @@ describe('Report Service - Unit Tests', () => {
       worksheet.addRow({ name: 'Item 2', value: 200 });
       worksheet.addRow({ name: 'Item 3', value: 300 });
       
-      expect(worksheet.rowCount).toBe(4); // Header + 3 data rows
+      expect(worksheet.rowCount).toBe(4);
       expect(worksheet.actualRowCount).toBe(4);
     });
   });

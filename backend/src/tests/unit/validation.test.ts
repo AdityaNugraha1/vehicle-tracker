@@ -1,4 +1,3 @@
-// src/tests/unit/validation.test.ts
 import { describe, it, expect } from '@jest/globals';
 import { 
   loginSchema, 
@@ -65,7 +64,7 @@ describe('Validation Schemas - Unit Tests', () => {
       expect(result.email).toBe('test@example.com');
       expect(result.password).toBe('password123');
       expect(result.name).toBe('Test User');
-      expect(result.role).toBe(UserRole.USER); // Default role
+      expect(result.role).toBe(UserRole.USER);
     });
 
     it('should accept valid custom roles', () => {

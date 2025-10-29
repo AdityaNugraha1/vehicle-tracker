@@ -1,10 +1,8 @@
-// src/controllers/maintenance.controller.ts - BACKEND (DIPERBAIKI)
 import { Request, Response } from 'express';
 import { MaintenanceService } from '../services/maintenance.service';
 import { MaintenanceType, MaintenanceStatus } from '@prisma/client';
 
 export class MaintenanceController {
-  // Get all maintenance records
   static async getMaintenance(req: Request, res: Response) {
     try {
       const {
@@ -38,14 +36,12 @@ export class MaintenanceController {
     }
   }
 
-  // Create new maintenance record
   static async createMaintenance(req: Request, res: Response) {
     try {
       const { vehicleId, type, description, cost, date } = req.body;
 
       console.log('Create maintenance request:', req.body);
 
-      // Validasi required fields
       if (!vehicleId || !type || !description) {
         return res.status(400).json({
           success: false,
@@ -53,7 +49,6 @@ export class MaintenanceController {
         });
       }
 
-      // Validasi maintenance type
       const validTypes = Object.values(MaintenanceType);
       if (!validTypes.includes(type)) {
         return res.status(400).json({
@@ -91,7 +86,6 @@ export class MaintenanceController {
     }
   }
 
-  // Complete maintenance
   static async completeMaintenance(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -126,7 +120,6 @@ export class MaintenanceController {
     }
   }
 
-  // Start maintenance (set to in progress)
   static async startMaintenance(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -161,7 +154,6 @@ export class MaintenanceController {
     }
   }
 
-  // Get maintenance statistics
   static async getMaintenanceStats(req: Request, res: Response) {
     try {
       const stats = await MaintenanceService.getMaintenanceStats();

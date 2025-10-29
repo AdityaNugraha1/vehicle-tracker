@@ -1,4 +1,3 @@
-// src/tests/integration/report.integration.test.ts
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import app from '../../app'; //
@@ -14,7 +13,6 @@ let generatedReportId: string;
 let generatedReportFilename: string;
 
 beforeAll(async () => {
-  // Buat Admin
   const adminRes = await request(app).post('/api/auth/register').send({
     email: `report-admin-${Date.now()}@test.com`,
     password: 'Password123',
@@ -34,7 +32,6 @@ afterAll(async () => {
     await prisma.user.delete({ where: { id: adminUserId } }).catch(() => {});
   await prisma.$disconnect();
 
-  // Hapus file fisik jika ada
   if (generatedReportFilename) {
     const filepath = path.join(
       process.cwd(),
@@ -48,13 +45,11 @@ afterAll(async () => {
 });
 
 describe('Report API Integration Tests', () => {
-  /**
-   * Menguji Pembuatan Laporan
-   */
+ 
   describe('POST /api/reports/trip-summary', () => {
     it('should generate a trip summary report (200)', async () => {
       const res = await request(app)
-        .post('/api/reports/trip-summary') //
+        .post('/api/reports/trip-summary') 
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           startDate: '2024-01-01T00:00:00Z',
@@ -71,13 +66,10 @@ describe('Report API Integration Tests', () => {
     });
   });
 
-  /**
-   * Menguji Pengambilan Laporan
-   */
   describe('GET /api/reports', () => {
     it('should get list of generated reports (200)', async () => {
       const res = await request(app)
-        .get('/api/reports') //
+        .get('/api/reports') 
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.statusCode).toBe(200);
@@ -86,42 +78,30 @@ describe('Report API Integration Tests', () => {
     });
   });
 
-  /**
-   * Menguji Download Laporan (Memperbaiki logika controller)
-   */
   describe('GET /api/reports/download/:filename', () => {
     it('should download the generated report file (200)', async () => {
       const res = await request(app)
-        .get(`/api/reports/download/${generatedReportFilename}`) //
-        .set('Authorization', `Bearer ${adminToken}`); // Token harus dikirim
+        .get(`/api/reports/download/${generatedReportFilename}`) 
+        .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.header['content-type']).toBe(
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
       );
     });
   });
 
-  /**
-   * Menguji Penghapusan Laporan (Memperbaiki logika controller & service)
-   */
   describe('DELETE /api/reports/:id', () => {
     it('should delete the report (200)', async () => {
-      // CATATAN: Ini akan berhasil jika controller diperbaiki untuk memanggil
-      // ReportService.deleteReport(id) dan service-nya diimplementasikan.
-      // Saat ini, tes ini hanya menguji rute dan controller
-
-      // Untuk membuat tes ini LULUS, implementasikan ReportService.deleteReport
       await prisma.report.update({
         where: { id: generatedReportId },
-        data: { filePath: '' }, // Hentikan controller agar tidak mencoba menghapus file
+        data: { filePath: '' },
       });
 
       const res = await request(app)
-        .delete(`/api/reports/${generatedReportId}`) //
+        .delete(`/api/reports/${generatedReportId}`) 
         .set('Authorization', `Bearer ${adminToken}`);
 
-      // Controller Anda mengembalikan 200 bahkan jika service gagal
       expect(res.statusCode).toBe(200);
       expect(res.body.message).toBe('Report deleted successfully');
     });

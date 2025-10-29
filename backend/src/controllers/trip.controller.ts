@@ -1,19 +1,15 @@
-// src/controllers/trip.controller.ts - PERBAIKI LENGKAP
 import { Request, Response } from 'express';
 import { TripService } from '../services/trip.service';
 
 export class TripController {
-  // Start a new trip
   static async startTrip(req: Request, res: Response) {
     try {
-      // DAPATKAN vehicleId dari URL PARAMS
       const { vehicleId } = req.params;
-      const { startLat, startLng } = req.body; // HAPUS estimatedDistance
+      const { startLat, startLng } = req.body;
 
       console.log('Start trip request - params:', req.params);
       console.log('Start trip request - body:', req.body);
 
-      // Validasi - vehicleId dari URL params
       if (!vehicleId) {
         return res.status(400).json({
           success: false,
@@ -21,7 +17,6 @@ export class TripController {
         });
       }
 
-      // Validasi body data
       if (typeof startLat !== 'number' || typeof startLng !== 'number') {
         return res.status(400).json({
           success: false,
@@ -33,7 +28,6 @@ export class TripController {
         vehicleId,
         startLat,
         startLng
-        // HAPUS estimatedDistance
       });
 
       res.status(201).json({
@@ -57,17 +51,14 @@ export class TripController {
     }
   }
 
-  // End a trip
   static async endTrip(req: Request, res: Response) {
     try {
-      // DAPATKAN tripId dari URL PARAMS
       const { id } = req.params;
       const { endLat, endLng, distance, fuelUsed } = req.body;
 
       console.log('End trip request - params:', req.params);
       console.log('End trip request - body:', req.body);
 
-      // Validasi - tripId dari URL params
       if (!id) {
         return res.status(400).json({
           success: false,
@@ -75,7 +66,6 @@ export class TripController {
         });
       }
 
-      // Validasi body data
       if (typeof endLat !== 'number' || typeof endLng !== 'number') {
         return res.status(400).json({
           success: false,
@@ -125,7 +115,6 @@ export class TripController {
     }
   }
 
-  // Get trips with filters
   static async getTrips(req: Request, res: Response) {
     try {
       const {
@@ -160,7 +149,6 @@ export class TripController {
     }
   }
 
-  // Get trip statistics
   static async getTripStats(req: Request, res: Response) {
     try {
       const { vehicleId, startDate, endDate } = req.query;

@@ -1,4 +1,3 @@
-// src/app.ts - UPDATED WITH SWAGGER
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -6,10 +5,8 @@ import morgan from 'morgan';
 import compression from 'compression';
 import { config } from './config';
 
-// Import Swagger
 import { swaggerSpec, swaggerUi } from './docs/swagger';
 
-// Import routes
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import vehicleRoutes from './routes/vehicle.routes';
@@ -18,7 +15,6 @@ import maintenanceRoutes from './routes/maintenance.routes';
 
 const app = express();
 
-// Basic middlewares
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
@@ -32,7 +28,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -41,7 +36,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root route
 app.get('/', (req, res) => {
   res.json({
     message: 'Vehicle Tracker API',
@@ -50,7 +44,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Swagger Documentation
 app.use('/api-docs', swaggerUi.serve);
 app.get('/api-docs', swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
@@ -58,20 +51,17 @@ app.get('/api-docs', swaggerUi.setup(swaggerSpec, {
   customfavIcon: '/favicon.ico'
 }));
 
-// Swagger JSON endpoint
 app.get('/api-docs.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     error: 'Route not found',
@@ -90,7 +80,6 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Server error:', err);
   res.status(err.status || 500).json({

@@ -1,7 +1,5 @@
-// src/types/index.ts
 import { UserRole as PrismaUserRole } from '@prisma/client';
 
-// Re-export Prisma enum to avoid conflicts
 export type UserRole = PrismaUserRole;
 
 export interface User {
@@ -35,7 +33,6 @@ export interface AuthResponse {
   tokens: AuthTokens;
 }
 
-// Extend Express Request type
 declare global {
   namespace Express {
     interface Request {

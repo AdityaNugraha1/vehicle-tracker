@@ -1,10 +1,8 @@
-// src/services/vehicle.service.ts
 import { PrismaClient, VehicleStatus, TripStatus, MaintenanceStatus, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export class VehicleService {
-  // Get all vehicles with pagination
   static async getAllVehicles(page: number = 1, limit: number = 10, search?: string) {
     const skip = (page - 1) * limit;
 
@@ -55,11 +53,9 @@ static async getAvailableVehicles() {
     try {
       const vehicles = await prisma.vehicle.findMany({
         where: {
-          // Filter berdasarkan status 'AVAILABLE'
           status: 'AVAILABLE' 
         },
         select: {
-          // Pilih hanya data yang dibutuhkan frontend
           id: true,
           licensePlate: true,
           brand: true,
@@ -67,7 +63,7 @@ static async getAvailableVehicles() {
           fuelLevel: true
         },
         orderBy: {
-          licensePlate: 'asc' // Urutkan agar konsisten
+          licensePlate: 'asc'
         }
       });
       return vehicles;
@@ -95,7 +91,6 @@ static async getAvailableVehicles() {
     });
   }
 
-  // Create new vehicle - PERBAIKAN: Tambahkan status default
   static async createVehicle(data: {
     licensePlate: string;
     brand: string;
@@ -106,7 +101,6 @@ static async getAvailableVehicles() {
     fuelLevel?: number;
     odometer?: number;
   }) {
-    // Check if license plate already exists
     const existingVehicle = await prisma.vehicle.findUnique({
       where: { licensePlate: data.licensePlate }
     });
@@ -125,7 +119,7 @@ static async getAvailableVehicles() {
         fuelLevel: data.fuelLevel,
         odometer: data.odometer,
         userId: data.userId,
-        status: VehicleStatus.AVAILABLE // Status default
+        status: VehicleStatus.AVAILABLE
       },
       include: {
         createdBy: {
@@ -139,7 +133,6 @@ static async getAvailableVehicles() {
     });
   }
 
-  // Update vehicle
   static async updateVehicle(id: string, data: {
     licensePlate?: string;
     brand?: string;
@@ -167,9 +160,7 @@ static async getAvailableVehicles() {
     });
   }
 
-  // Delete vehicle
 static async deleteVehicle(id: string) {
-    // 1. Check for active trips (logic ini sudah benar)
     const activeTrips = await prisma.trip.count({
       where: {
         vehicleId: id,
@@ -181,7 +172,6 @@ static async deleteVehicle(id: string) {
       throw new Error('Cannot delete vehicle with active trips');
     }
 
-    // 2. (TAMBAHAN) Periksa maintenance yang sedang berjalan
     const activeMaintenance = await prisma.maintenance.count({
         where: {
             vehicleId: id,
@@ -193,21 +183,17 @@ static async deleteVehicle(id: string) {
         throw new Error('Cannot delete vehicle with pending or in-progress maintenance');
     }
 
-    // 3. (BARU) Hapus semua data dependen dalam satu transaksi
-    // Ini akan menghapus trip yang sudah selesai, maintenance, dan laporan terkait
     await prisma.$transaction([
       prisma.report.deleteMany({ where: { vehicleId: id } }), // Hapus laporan dulu
       prisma.trip.deleteMany({ where: { vehicleId: id } }),
       prisma.maintenance.deleteMany({ where: { vehicleId: id } })
     ]);
 
-    // 4. (TERAKHIR) Hapus kendaraan setelah dependen dihapus
     return prisma.vehicle.delete({
       where: { id }
     });
   }
 
-  // Update vehicle location
   static async updateVehicleLocation(id: string, latitude: number, longitude: number) {
     return prisma.vehicle.update({
       where: { id },
@@ -218,7 +204,6 @@ static async deleteVehicle(id: string) {
     });
   }
 
-  // Get vehicle statistics
   static async getVehicleStats() {
     const [
       totalVehicles,
@@ -241,7 +226,6 @@ static async deleteVehicle(id: string) {
     };
   }
 
-  // Search vehicles by various criteria
   static async searchVehicles(criteria: {
     status?: VehicleStatus;
     brand?: string;

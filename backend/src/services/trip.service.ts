@@ -1,4 +1,3 @@
-// src/services/trip.service.ts - PERBAIKI LENGKAP
 import { Prisma, PrismaClient, TripStatus, VehicleStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -11,7 +10,6 @@ export class TripService {
   }) {
     console.log('TripService.startTrip called with data:', data);
 
-    // VALIDASI INPUT
     if (!data.vehicleId) {
       throw new Error('Vehicle ID is required');
     }
@@ -20,7 +18,6 @@ export class TripService {
       throw new Error('Valid startLat and startLng are required');
     }
 
-    // Check if vehicle exists and is available
     const vehicle = await prisma.vehicle.findUnique({
       where: { 
         id: data.vehicleId
@@ -53,7 +50,6 @@ export class TripService {
         startLat: data.startLat,
         startLng: data.startLng,
         status: TripStatus.ACTIVE
-        // HAPUS estimatedDistance karena tidak ada di schema
       },
       include: {
         vehicle: {
@@ -67,7 +63,6 @@ export class TripService {
       }
     });
 
-    // Update vehicle status to ON_TRIP
     await prisma.vehicle.update({
       where: { id: data.vehicleId },
       data: { 
@@ -88,7 +83,6 @@ export class TripService {
   }) {
     console.log('TripService.endTrip called with:', { tripId, data });
 
-    // VALIDASI INPUT
     if (!tripId) {
       throw new Error('Trip ID is required');
     }
@@ -105,7 +99,6 @@ export class TripService {
       throw new Error('Valid fuelUsed is required');
     }
 
-    // Check if trip exists and is active
     const trip = await prisma.trip.findUnique({
       where: { id: tripId },
       include: {
@@ -121,7 +114,6 @@ export class TripService {
       throw new Error(`Trip is not active. Current status: ${trip.status}`);
     }
 
-    // Update trip with end data
     const updatedTrip = await prisma.trip.update({
       where: { id: tripId },
       data: {
@@ -144,7 +136,6 @@ export class TripService {
       }
     });
 
-    // Update vehicle status back to AVAILABLE
     await prisma.vehicle.update({
       where: { id: trip.vehicleId },
       data: { 
@@ -159,7 +150,6 @@ export class TripService {
     return updatedTrip;
   }
 
-  // Get trips with filters
   static async getTrips(filters: {
     vehicleId?: string;
     startDate?: Date;
@@ -213,7 +203,6 @@ export class TripService {
     };
   }
 
-  // Get trip statistics
   static async getTripStats(vehicleId?: string, startDate?: Date, endDate?: Date) {
     const where: Prisma.TripWhereInput = { status: TripStatus.COMPLETED };
 

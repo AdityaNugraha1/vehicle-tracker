@@ -3,7 +3,6 @@ import { VehicleService } from '../services/vehicle.service';
 import { TripService } from '../services/trip.service';
 
 export class VehicleController {
-  // Get all vehicles with pagination and search
   static async getVehicles(req: Request, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -24,7 +23,6 @@ export class VehicleController {
     }
   }
 
-  // Get vehicle by ID
   static async getVehicle(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -49,7 +47,6 @@ export class VehicleController {
     }
   }
 
-  // Create new vehicle
   static async createVehicle(req: Request, res: Response) {
     try {
       const { licensePlate, brand, model, year, color, fuelLevel, odometer } = req.body;
@@ -92,13 +89,11 @@ export class VehicleController {
     }
   }
 
-  // Update vehicle
   static async updateVehicle(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const updates = req.body;
 
-      // Convert numeric fields if present
       if (updates.year) updates.year = parseInt(updates.year);
       if (updates.fuelLevel) updates.fuelLevel = parseInt(updates.fuelLevel);
       if (updates.odometer) updates.odometer = parseInt(updates.odometer);
@@ -125,7 +120,6 @@ export class VehicleController {
     }
   }
 
-  // Delete vehicle
   static async deleteVehicle(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -152,7 +146,6 @@ export class VehicleController {
     }
   }
 
-  // Get vehicle statistics
   static async getVehicleStats(req: Request, res: Response) {
     try {
       const stats = await VehicleService.getVehicleStats();
@@ -169,7 +162,6 @@ export class VehicleController {
     }
   }
 
-  // Update vehicle location
   static async updateVehicleLocation(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -197,7 +189,6 @@ export class VehicleController {
     }
   }
 
-  // Search vehicles
   static async searchVehicles(req: Request, res: Response) {
     try {
       const {
@@ -231,12 +222,10 @@ export class VehicleController {
   }
   static async getAvailableVehicles(req: Request, res: Response) {
     try {
-      // Panggil service untuk mengambil kendaraan yang 'AVAILABLE'
       const vehicles = await VehicleService.getAvailableVehicles();
 
       res.json({
         success: true,
-        // Frontend mengharapkan { success: true, data: [...] }
         data: vehicles 
       });
 

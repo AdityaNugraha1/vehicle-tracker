@@ -1,10 +1,8 @@
-// src/services/maintenance.service.ts - BACKEND (DIPERBAIKI)
 import { Prisma, PrismaClient, MaintenanceStatus, MaintenanceType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export class MaintenanceService {
-  // Get all maintenance records with pagination
   static async getMaintenance(filters: {
     vehicleId?: string;
     status?: MaintenanceStatus;
@@ -54,7 +52,6 @@ export class MaintenanceService {
     };
   }
 
-  // Create new maintenance record
   static async createMaintenance(data: {
     vehicleId: string;
     type: MaintenanceType;
@@ -64,7 +61,6 @@ export class MaintenanceService {
   }) {
     console.log('Creating maintenance with data:', data);
 
-    // Validasi input
     if (!data.vehicleId) {
       throw new Error('Vehicle ID is required');
     }
@@ -77,7 +73,6 @@ export class MaintenanceService {
       throw new Error('Description is required');
     }
 
-    // Check if vehicle exists
     const vehicle = await prisma.vehicle.findUnique({
       where: { id: data.vehicleId }
     });
@@ -86,7 +81,6 @@ export class MaintenanceService {
       throw new Error('Vehicle not found');
     }
 
-    // Create maintenance record
     const maintenance = await prisma.maintenance.create({
       data: {
         vehicleId: data.vehicleId,
@@ -109,7 +103,6 @@ export class MaintenanceService {
       }
     });
 
-    // Update vehicle status to MAINTENANCE untuk jenis maintenance yang critical
     const criticalMaintenanceTypes: MaintenanceType[] = [
       MaintenanceType.ENGINE_REPAIR,
       MaintenanceType.BRAKE_SERVICE,
@@ -126,7 +119,6 @@ export class MaintenanceService {
     return maintenance;
   }
 
-  // Update maintenance status
   static async updateMaintenanceStatus(maintenanceId: string, status: MaintenanceStatus) {
     console.log('Updating maintenance status:', { maintenanceId, status });
 
@@ -134,7 +126,6 @@ export class MaintenanceService {
       throw new Error('Maintenance ID is required');
     }
 
-    // Check if maintenance exists
     const maintenance = await prisma.maintenance.findUnique({
       where: { id: maintenanceId },
       include: {
@@ -146,7 +137,6 @@ export class MaintenanceService {
       throw new Error('Maintenance record not found');
     }
 
-    // Update maintenance status
     const updatedMaintenance = await prisma.maintenance.update({
       where: { id: maintenanceId },
       data: { status },
@@ -163,7 +153,6 @@ export class MaintenanceService {
       }
     });
 
-    // If maintenance is completed and vehicle was in maintenance, set it back to available
     if (status === MaintenanceStatus.COMPLETED && maintenance.vehicle.status === 'MAINTENANCE') {
       await prisma.vehicle.update({
         where: { id: maintenance.vehicleId },
@@ -174,17 +163,14 @@ export class MaintenanceService {
     return updatedMaintenance;
   }
 
-  // Complete maintenance
   static async completeMaintenance(maintenanceId: string) {
     return this.updateMaintenanceStatus(maintenanceId, MaintenanceStatus.COMPLETED);
   }
 
-  // Start maintenance (set to in progress)
   static async startMaintenance(maintenanceId: string) {
     return this.updateMaintenanceStatus(maintenanceId, MaintenanceStatus.IN_PROGRESS);
   }
 
-  // Get maintenance statistics
   static async getMaintenanceStats() {
     const [
       totalMaintenance,

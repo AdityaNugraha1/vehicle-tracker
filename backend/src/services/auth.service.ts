@@ -1,11 +1,9 @@
-// src/services/auth.service.ts
 import { UserRole, User } from '@prisma/client';
 import { UserService } from './user.service';
 import { AuthUtils } from '../utils/auth';
 import { AuthResponse, LoginRequest, RegisterRequest } from '../types';
 
 export class AuthService {
-  // User registration
   static async register(data: RegisterRequest): Promise<AuthResponse> {
     const { email, password, name, role = UserRole.USER } = data;
 
@@ -14,7 +12,6 @@ export class AuthService {
       throw new Error('User already exists with this email');
     }
 
-    // Hash password
     const passwordHash = await AuthUtils.hashPassword(password);
 
     const user = await UserService.createUser(email, passwordHash, name, role);
@@ -31,7 +28,6 @@ export class AuthService {
       }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return {
@@ -40,7 +36,6 @@ export class AuthService {
     };
   }
 
-  // User login
   static async login(data: LoginRequest): Promise<AuthResponse> {
     const { email, password } = data;
 
@@ -69,7 +64,6 @@ export class AuthService {
       }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return {
@@ -78,7 +72,6 @@ export class AuthService {
     };
   }
 
-  // Refresh tokens
   static async refreshTokens(refreshToken: string): Promise<AuthResponse> {
     try {
       const decoded = AuthUtils.verifyRefreshToken(refreshToken) as {
@@ -103,7 +96,6 @@ export class AuthService {
         }),
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = user;
 
       return {
@@ -115,24 +107,15 @@ export class AuthService {
     }
   }
 
-  // --- FUNGSI YANG DIKEMBALIKAN ---
-
-  /**
-   * Get user profile details
-   */
   static async getUserProfile(userId: string): Promise<Omit<User, 'password'>> {
     const user = await UserService.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user;
     return safeUser;
   }
 
-  /**
-   * Update user profile (name or password)
-   */
   static async updateProfile(
     userId: string,
     data: { name?: string; password?: string }
@@ -143,7 +126,6 @@ export class AuthService {
       updateData.name = data.name;
     }
 
-    // Jika password disediakan, hash password baru
     if (data.password) {
       updateData.password = await AuthUtils.hashPassword(data.password);
     }
@@ -152,10 +134,8 @@ export class AuthService {
       throw new Error('No data provided for update');
     }
 
-    // Panggil UserService untuk update
     const updatedUser = await UserService.updateUser(userId, updateData);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = updatedUser;
 
     return userWithoutPassword;

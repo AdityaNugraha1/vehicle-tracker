@@ -1,4 +1,3 @@
-// src/services/report.service.ts
 import { PrismaClient, VehicleStatus, TripStatus, ReportType } from '@prisma/client';
 import ExcelJS from 'exceljs';
 import path from 'path';
@@ -8,12 +7,10 @@ import { config } from '../config';
 const prisma = new PrismaClient();
 
 export class ReportService {
-  // Generate vehicle utilization report
   static async generateVehicleUtilizationReport(dateRange: { start: Date; end: Date }, userId: string) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Vehicle Utilization');
 
-    // Add header row
     worksheet.columns = [
       { header: 'License Plate', key: 'licensePlate', width: 15 },
       { header: 'Brand', key: 'brand', width: 15 },
@@ -26,7 +23,6 @@ export class ReportService {
       { header: 'Avg Fuel Efficiency', key: 'avgEfficiency', width: 18 }
     ];
 
-    // Get vehicles with trip data
     const vehicles = await prisma.vehicle.findMany({
       include: {
         trips: {
@@ -47,14 +43,12 @@ export class ReportService {
       }
     });
 
-    // Add data rows
     for (const vehicle of vehicles) {
       const totalTrips = vehicle.trips.length;
       const totalDistance = vehicle.trips.reduce((sum, trip) => sum + (trip.distance || 0), 0);
       const totalFuelUsed = vehicle.trips.reduce((sum, trip) => sum + (trip.fuelUsed || 0), 0);
       const avgEfficiency = totalFuelUsed > 0 ? totalDistance / totalFuelUsed : 0;
       
-      // Simple utilization rate calculation (can be enhanced)
       const utilizationRate = totalTrips > 0 ? Math.min(100, (totalTrips * 20)) : 0;
 
       worksheet.addRow({
@@ -70,7 +64,6 @@ export class ReportService {
       });
     }
 
-    // Add summary row
     worksheet.addRow({});
     worksheet.addRow({
       licensePlate: 'TOTAL',
@@ -79,7 +72,6 @@ export class ReportService {
       totalFuelUsed: vehicles.reduce((sum, v) => sum + v.trips.reduce((s, t) => s + (t.fuelUsed || 0), 0), 0)
     });
 
-    // Style the header
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).fill = {
       type: 'pattern',
@@ -87,12 +79,10 @@ export class ReportService {
       fgColor: { argb: 'FFE6E6FA' }
     };
 
-    // Generate filename and save
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `vehicle-utilization-${timestamp}.xlsx`;
     const filepath = path.join(__dirname, '../../reports', filename);
 
-    // Ensure reports directory exists
     const reportsDir = path.join(__dirname, '../../reports');
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
@@ -100,7 +90,6 @@ export class ReportService {
 
     await workbook.xlsx.writeFile(filepath);
 
-    // Save report record to database
     const report = await prisma.report.create({
       data: {
         title: `Vehicle Utilization Report - ${dateRange.start.toDateString()} to ${dateRange.end.toDateString()}`,
@@ -123,12 +112,10 @@ export class ReportService {
     };
   }
 
-  // Generate maintenance report
   static async generateMaintenanceReport(userId: string) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Maintenance Report');
 
-    // Add header row
     worksheet.columns = [
       { header: 'License Plate', key: 'licensePlate', width: 15 },
       { header: 'Brand', key: 'brand', width: 15 },
@@ -140,7 +127,6 @@ export class ReportService {
       { header: 'Cost (IDR)', key: 'cost', width: 15 }
     ];
 
-    // Get maintenance records
     const maintenanceRecords = await prisma.maintenance.findMany({
       include: {
         vehicle: {
@@ -156,7 +142,6 @@ export class ReportService {
       }
     });
 
-    // Add data rows
     for (const record of maintenanceRecords) {
       worksheet.addRow({
         licensePlate: record.vehicle.licensePlate,
@@ -170,7 +155,6 @@ export class ReportService {
       });
     }
 
-    // Style the header
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).fill = {
       type: 'pattern',
@@ -178,12 +162,10 @@ export class ReportService {
       fgColor: { argb: 'FFFFE4E1' }
     };
 
-    // Generate filename and save
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `maintenance-report-${timestamp}.xlsx`;
     const filepath = path.join(__dirname, '../../reports', filename);
 
-    // Ensure reports directory exists
     const reportsDir = path.join(__dirname, '../../reports');
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
@@ -191,7 +173,6 @@ export class ReportService {
 
     await workbook.xlsx.writeFile(filepath);
 
-    // Save report record to database
     const report = await prisma.report.create({
       data: {
         title: `Maintenance Report - ${new Date().toLocaleDateString()}`,
@@ -210,21 +191,17 @@ export class ReportService {
     };
   }
 
-  // Generate trip summary report
   static async generateTripSummaryReport(dateRange: { start: Date; end: Date }, userId: string) {
     const workbook = new ExcelJS.Workbook();
     
-    // Summary worksheet
     const summarySheet = workbook.addWorksheet('Trip Summary');
     const detailSheet = workbook.addWorksheet('Trip Details');
 
-    // Summary sheet headers
     summarySheet.columns = [
       { header: 'Metric', key: 'metric', width: 25 },
       { header: 'Value', key: 'value', width: 20 }
     ];
 
-    // Get trip statistics
     const tripStats = await prisma.trip.findMany({
       where: {
         startTime: {
@@ -249,14 +226,12 @@ export class ReportService {
     const totalFuelUsed = tripStats.reduce((sum, trip) => sum + (trip.fuelUsed || 0), 0);
     const avgFuelEfficiency = totalFuelUsed > 0 ? totalDistance / totalFuelUsed : 0;
 
-    // Add summary data
     summarySheet.addRow({ metric: 'Total Trips', value: totalTrips });
     summarySheet.addRow({ metric: 'Total Distance (km)', value: Math.round(totalDistance * 100) / 100 });
     summarySheet.addRow({ metric: 'Total Fuel Used (L)', value: Math.round(totalFuelUsed * 100) / 100 });
     summarySheet.addRow({ metric: 'Average Fuel Efficiency (km/L)', value: Math.round(avgFuelEfficiency * 100) / 100 });
     summarySheet.addRow({ metric: 'Report Period', value: `${dateRange.start.toDateString()} - ${dateRange.end.toDateString()}` });
 
-    // Detail sheet headers
     detailSheet.columns = [
       { header: 'Trip ID', key: 'id', width: 15 },
       { header: 'Vehicle', key: 'vehicle', width: 20 },
@@ -267,7 +242,6 @@ export class ReportService {
       { header: 'Status', key: 'status', width: 12 }
     ];
 
-    // Add detail data
     for (const trip of tripStats) {
       detailSheet.addRow({
         id: trip.id.substring(0, 8),
@@ -280,7 +254,6 @@ export class ReportService {
       });
     }
 
-    // Style headers
     [summarySheet, detailSheet].forEach(sheet => {
       sheet.getRow(1).font = { bold: true };
       sheet.getRow(1).fill = {
@@ -289,13 +262,10 @@ export class ReportService {
         fgColor: { argb: 'FFE6F3FF' }
       };
     });
-
-    // Generate filename and save
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `trip-summary-${timestamp}.xlsx`;
     const filepath = path.join(__dirname, '../../reports', filename);
 
-    // Ensure reports directory exists
     const reportsDir = path.join(__dirname, '../../reports');
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
@@ -303,7 +273,6 @@ export class ReportService {
 
     await workbook.xlsx.writeFile(filepath);
 
-    // Save report record to database
     const report = await prisma.report.create({
       data: {
         title: `Trip Summary Report - ${dateRange.start.toDateString()} to ${dateRange.end.toDateString()}`,
@@ -326,7 +295,6 @@ export class ReportService {
     };
   }
 
-  // Get all generated reports
   static async getGeneratedReports(userId: string, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
@@ -398,8 +366,7 @@ export class ReportService {
 }
 
 static async deleteReport(id: string) {
-  // Implementation for deleting report from database
-  // This would require additional business logic
+
 }
 
 }

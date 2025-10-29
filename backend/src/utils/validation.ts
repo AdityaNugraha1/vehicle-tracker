@@ -1,8 +1,6 @@
-// src/utils/validation.ts
 import { z } from 'zod';
 import { UserRole } from '@prisma/client';
 
-// Convert UserRole enum to array for Zod
 const userRoleEnum = Object.values(UserRole) as [string, ...string[]];
 
 export const loginSchema = z.object({
@@ -29,11 +27,9 @@ export const updateProfileSchema = z.object({
     .optional(),
 });
 
-// --- TAMBAHKAN SKEMA INI ---
 export const updateUserRoleSchema = z.object({
   role: z.enum(userRoleEnum),
 });
-// --- AKHIR BLOK TAMBAHAN ---
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
