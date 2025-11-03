@@ -24,6 +24,9 @@ COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 
+# Include source files so swagger-jsdoc can read TS annotations at runtime
+COPY --from=builder /app/src ./src
+
 COPY --from=builder /app/prisma ./prisma
 
 RUN npx prisma generate
