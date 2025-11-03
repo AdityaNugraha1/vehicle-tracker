@@ -15,7 +15,7 @@ const swaggerDefinition = {
       description: 'Development server'
     },
     {
-      url: 'https://vehicletracker.my.id',
+      url: 'https://api.vehicletracker.my.id',
       description: 'Production server'
     }
   ],
