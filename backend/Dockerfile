@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-COPY prisma/schema.prisma ./prisma/
+COPY prisma ./prisma
 
 RUN npm install
 RUN npx prisma generate
@@ -24,7 +24,7 @@ COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 
-COPY prisma/schema.prisma ./prisma/
+COPY --from=builder /app/prisma ./prisma
 
 RUN npx prisma generate
 
