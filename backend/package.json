@@ -27,6 +27,8 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^6.18.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.1",
     "config": "^4.1.1",
@@ -41,9 +43,7 @@
     "multer": "^2.0.2",
     "redis": "^5.9.0",
     "socket.io": "^4.8.1",
-    "zod": "^4.1.12",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",

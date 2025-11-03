@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 
 // Hapus 'declare module' yang sebelumnya ada di sini jika Anda menambahkannya.
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
